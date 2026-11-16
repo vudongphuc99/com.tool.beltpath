@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.1]
+
+- `BeltPath/Package Updater` window: shows the installed and latest package version (newest `vX.Y.Z` git tag) and
+  updates a git-installed project to the latest tag with one click.
+
 ## [1.1.0]
 
 - Map editor extension API (one belt per map): `MapEditorExtension` components listed on `MapEditorController` can

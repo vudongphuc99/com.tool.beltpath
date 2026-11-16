@@ -6,6 +6,7 @@
         "UnityEditor.TestRunner",
         "Tool.BeltPath",
         "Tool.BeltPath.MapEditor",
+        "Tool.BeltPath.Editor",
         "Unity.Splines",
         "Unity.Mathematics"
     ],

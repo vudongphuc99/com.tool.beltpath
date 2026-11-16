@@ -16,6 +16,12 @@ From git, add one line to the game's `Packages/manifest.json` (pin a tag so the 
 
 If the repo is private, use the SSH form `git@github.com:vudongphuc99/com.tool.beltpath.git#v1.0.0` (Unity cannot ask for a password).
 
+### Updating
+
+Open `BeltPath/Package Updater`. It shows the installed version and the newest `vX.Y.Z` tag of the git repository; when a
+newer tag exists, **Update** changes the game's `manifest.json` to that tag and Unity reinstalls the package. It needs
+`git` on the PATH and only works for projects that install the package from git (not embedded or local copies).
+
 ## Developing the package
 
 The source of truth is this folder, embedded in the `BeltPathDev` Unity project (`BeltPathDev/Packages/com.tool.beltpath`).
@@ -270,7 +276,7 @@ reproduced; ducks use a uniform scale.
 | Folder | Purpose |
 |---|---|
 | `Runtime/` | Data, spline builder, `BeltPath`, mesh builders, `BeltView`, `BeltPathAuthoring`, `BeltNodeSplineConverter`, `BeltCameraFitter`, `BeltCameraFitMath`, `BeltRider`, `BeltCameraFacing` (assembly `Tool.BeltPath`) |
-| `Editor/` | Authoring inspector and edit-mode rebuild updater (assembly `Tool.BeltPath.Editor`) |
+| `Editor/` | Authoring inspector, edit-mode rebuild updater, and the package updater window (`PackageUpdaterWindow`, `GitTagReader`, `InstalledPackageReader`) (assembly `Tool.BeltPath.Editor`) |
 | `Shaders/` | `BeltPath/Water Flow`, `BeltPath/Water Caustics`, `BeltPath/Channel Wall` |
 | `Materials/` | Channel, water and caustics materials using the pack shaders |
 | `Settings/` | `BeltMeshSettings.asset`, the default channel and water dimensions |
