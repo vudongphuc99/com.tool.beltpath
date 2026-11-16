@@ -1,0 +1,19 @@
+{
+    "name": "Tool.BeltPath.MapEditor",
+    "rootNamespace": "Tool.BeltPath.MapEditor",
+    "references": [
+        "Tool.BeltPath",
+        "Unity.InputSystem",
+        "Unity.Splines",
+        "Unity.Mathematics"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

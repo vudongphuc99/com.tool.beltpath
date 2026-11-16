@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: BeltWater
+  m_Shader: {fileID: 4800000, guid: 0d77c74b6154e42f8b91bc5d4be881cb, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _ArrowSoftness: 0.001
+    - _ArrowSpeed: 0
+    - _ArrowStrength: 0
+    - _ArrowTiling: 1
+    - _ArrowWidth: 0.05
+    - _CenterBright: 0.311
+    - _CenterBrightPosition: 0.632
+    - _CenterBrightWidth: 1
+    - _DistortStrength: 0
+    - _EdgeDark: 1
+    - _EdgeDarkWidth: 0.01
+    - _FlowContrast: 0.066
+    - _FlowSpeed: 0.65
+    - _FoamSoftness: 0.056
+    - _FoamSpeed: 0.52
+    - _FoamStrength: 0
+    - _FoamTiling: 4.6
+    - _FoamWidth: 0.01
+    - _InnerCurrentStrength: 0.208
+    - _PathTiling: 2.3
+    m_Colors:
+    - _Color: {r: 1, g: 1, b: 1, a: 0.6509804}
+    - _WaterCenterColor: {r: 0.06299998, g: 0.828, b: 1, a: 1}
+    - _WaterInnerColor: {r: 0, g: 0.776, b: 0.97999996, a: 1}
+    - _WaterOuterColor: {r: 0, g: 0.652, b: 0.95699996, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

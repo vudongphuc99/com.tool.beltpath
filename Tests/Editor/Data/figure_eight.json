@@ -1,0 +1,12 @@
+{
+  "isClosed": true,
+  "nodes": [
+    {"x":11.3,"y":12.6416,"elevation":1.1,"hasCustomTangent":true,"tangentIn":{"x":8.5676,"y":12.245},"tangentOut":{"x":12.8,"y":12.8592},"elevTangentIn":0.3349,"elevTangentOut":1.52},
+    {"x":15.14,"y":14.2651,"elevation":3.18,"hasCustomTangent":true,"tangentIn":{"x":14.0351,"y":13.1144},"tangentOut":{"x":16.24,"y":15.4106},"elevTangentIn":3.18,"elevTangentOut":3.18},
+    {"x":20.62,"y":20.007,"elevation":1.2,"hasCustomTangent":true,"tangentIn":{"x":18.0,"y":18.7548},"tangentOut":{"x":23.4248,"y":21.3474},"elevTangentIn":2.0,"elevTangentOut":0.3436},
+    {"x":25.78,"y":16.8859,"elevation":0.0,"hasCustomTangent":true,"tangentIn":{"x":25.78,"y":19.4859},"tangentOut":{"x":25.78,"y":14.2859},"elevTangentIn":0.0,"elevTangentOut":0.0},
+    {"x":20.6999,"y":13.124,"elevation":0.0,"hasCustomTangent":true,"tangentIn":{"x":23.1871,"y":12.5638},"tangentOut":{"x":17.4891,"y":13.8473},"elevTangentIn":0.0,"elevTangentOut":0.0},
+    {"x":11.16,"y":20.8174,"elevation":0.0,"hasCustomTangent":true,"tangentIn":{"x":15.6,"y":19.7297},"tangentOut":{"x":8.6628,"y":21.4292},"elevTangentIn":0.0,"elevTangentOut":0.0},
+    {"x":6.0,"y":17.0,"elevation":0.0,"hasCustomTangent":true,"tangentIn":{"x":6.0,"y":19.6},"tangentOut":{"x":6.0,"y":14.4},"elevTangentIn":0.0,"elevTangentOut":0.0}
+  ]
+}

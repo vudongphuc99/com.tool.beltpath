@@ -1,0 +1,19 @@
+{
+    "name": "Tool.BeltPath.MapEditor.Editor",
+    "rootNamespace": "Tool.BeltPath.MapEditor.Editor",
+    "references": [
+        "Tool.BeltPath",
+        "Tool.BeltPath.MapEditor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

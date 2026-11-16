@@ -1,0 +1,62 @@
+// Procedural noise for the belt water shaders.
+// Lattice rows wrap every `periodY` cells, so a pattern sampled with v = 0..N (N an integer) repeats
+// exactly at v = 1, 2, ... and a closed belt has no visible seam where it meets itself.
+#ifndef BELT_WATER_NOISE_INCLUDED
+#define BELT_WATER_NOISE_INCLUDED
+
+float BeltHash(float2 cell)
+{
+    return frac(sin(dot(cell, float2(127.1, 311.7))) * 43758.5453);
+}
+
+float2 BeltHash2(float2 cell)
+{
+    return float2(BeltHash(cell), BeltHash(cell + 17.3));
+}
+
+// Wraps a lattice row into 0..periodY-1, also for negative rows.
+float BeltWrapRow(float row, float periodY)
+{
+    return row - periodY * floor(row / periodY);
+}
+
+// Smooth value noise in 0..1. p is in lattice cells; periodY is a whole number of cells.
+float BeltPeriodicNoise(float2 p, float periodY)
+{
+    float2 cell = floor(p);
+    float2 local = frac(p);
+    float2 blend = local * local * (3.0 - 2.0 * local);
+    float row0 = BeltWrapRow(cell.y, periodY);
+    float row1 = BeltWrapRow(cell.y + 1.0, periodY);
+
+    float a = BeltHash(float2(cell.x, row0));
+    float b = BeltHash(float2(cell.x + 1.0, row0));
+    float c = BeltHash(float2(cell.x, row1));
+    float d = BeltHash(float2(cell.x + 1.0, row1));
+    return lerp(lerp(a, b, blend.x), lerp(c, d, blend.x), blend.y);
+}
+
+// Distance gap F2 - F1 of a cellular pattern: near 0 on cell borders, so 1 - smoothstep gives a bright web.
+float BeltPeriodicWeb(float2 p, float periodY)
+{
+    float2 cell = floor(p);
+    float2 local = frac(p);
+    float nearest = 8.0;
+    float second = 8.0;
+
+    for (int y = -1; y <= 1; y++)
+    {
+        for (int x = -1; x <= 1; x++)
+        {
+            float2 offset = float2(x, y);
+            float2 id = float2(cell.x + x, BeltWrapRow(cell.y + y, periodY));
+            float dist = length(offset + BeltHash2(id) - local);
+            second = min(second, max(dist, nearest));
+            nearest = min(nearest, dist);
+        }
+    }
+
+    return second - nearest;
+}
+
+#endif
