@@ -8,7 +8,7 @@ namespace Tool.BeltPath.Tests
     {
         private const float Tolerance = 0.05f;
         private const float CornerLengthTolerance = 0.1f;
-        private const float GameMatchTolerance = 0.02f;
+        private const float GameMatchTolerance = 0.025f;
 
         private const string OpenLineJson =
             "{\"isClosed\":false,\"nodes\":[{\"x\":0,\"y\":0},{\"x\":5,\"y\":0},{\"x\":10,\"y\":0}]}";

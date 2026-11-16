@@ -111,8 +111,102 @@ automatically), `Aligned` (handles on one line, own lengths), `Mirrored` (opposi
 (independent; holding `Alt` while dragging acts as Broken) - the **X/Y/Z offset** of the In and Out handle from the
 point, and the **Len**gth of each handle (direction kept). The mode is not stored in the file; it is worked out from
 the handles when a map is loaded. Curve handles are shown when exactly one point is selected and **Handles (T)** is on (faded while the point is automatic; dragging one makes the point
-custom) and are saved as `hasCustomTangent` with `tangentIn/Out` and `elevTangentIn/Out`. Out of scope in v1:
+custom) and are saved as `hasCustomTangent` with `tangentIn/Out` and `elevTangentIn/Out`. Out of scope:
 several belts per map. The image, tool toggles and view are not part of undo.
+
+## Extending the map editor
+
+A game adds its own parts to the map editor without changing the package: add components that derive from
+`MapEditorExtension` to the Map Editor scene and drag them into the `extensions` list of `MapEditorController`. With
+an empty list the editor behaves as before. The map is still one belt (`MapDocument`).
+
+| Need | API |
+|---|---|
+| Own UI | `MapEditorExtension.Attach(MapEditorContext)`: `context.Panel.AddSection(element)` puts a row above the top view; `Panel.RegisterTextEditor(field)` stops the editor shortcuts while that field has focus |
+| Draw on the top view | Implement `IMapTopViewLayer`, then `context.TopView.AddLayer(this)` (remove it in `Detach`). Layers are painted after the belt path and before the points and handles |
+| Click tool | Implement `IMapTopViewTool` and set `context.State.ActiveTool`. While it is set, left and right clicks go to it (`MapPointer`: pixel, cell, button, `Shift`, `Alt`); pan (middle drag) and zoom (wheel) stay with the editor. `PointerMove` is called only while a button is held |
+| Own keys | Override `HandleKeyboard(Keyboard)`; return true when a key was used and the editor skips its own shortcuts that frame. It is not called while the user types in a text field |
+| Extra data with undo | Implement `IMapDataExtension` (`CaptureState` / `RestoreState`, `WriteTo` / `ReadFrom`, `ClearData`). After changing the data call `context.NotifyDataChanged()`: it makes one undo step (or joins the open gesture, see `History.BeginGesture`) and refreshes the editor. New, Load, Save, Undo and Redo call the interface for you |
+| Extra data in the map file | Implement `IMapFileFormat` (at most one extension; more than one throws in `OnEnable`). `Create` wraps the belt in a subclass of `BeltPathData` with extra `[SerializeField]` fields, `Parse` reads it back. The JSON stays flat: `{isClosed, nodes, ...your fields}` |
+| React to changes | `Refresh()` runs after every change of the map, the editor state or the extension data |
+
+Minimal extension with a toggle that turns on a click tool:
+
+```csharp
+public sealed class PinExtension : MapEditorExtension, IMapTopViewTool
+{
+    private MapEditorContext context;
+
+    public override void Attach(MapEditorContext editorContext)
+    {
+        context = editorContext;
+        var toggle = new Toggle("Pin tool");
+        toggle.RegisterValueChangedCallback(evt => context.State.ActiveTool = evt.newValue ? this : null);
+        context.Panel.AddSection(toggle);
+    }
+
+    public void PointerDown(MapPointer pointer) { context.SetStatus($"Clicked cell {pointer.Cell}"); }
+    public void PointerMove(MapPointer pointer) { }
+    public void PointerUp(MapPointer pointer) { }
+}
+```
+
+### Using it in a game
+
+1. Install version 1.1.0 or newer (see Install). Run the menu `BeltPath/Create Map Editor Scene` to create the editor
+   scene in the game (`Assets/MapEditor/`).
+2. Write the extension in the game's own code. If that code is in an assembly definition, add the references
+   `Tool.BeltPath`, `Tool.BeltPath.MapEditor` and `Unity.InputSystem` to it; code without an assembly definition needs
+   nothing.
+3. In the Map Editor scene, add the extension component to any GameObject (for example a new `Extensions` object) and
+   drag it into the `extensions` list of `MapEditorController`. Add one component per extension; the order of the list
+   is the order of `Attach`, `Refresh`, key handling and layer drawing.
+4. Press Play. The game's UI row shows above the top view, and Save, Load, New, Undo and Redo include the extension
+   data.
+
+Extra data in the map file needs three parts: a file class, a format, and the data extension. The file class derives
+from `BeltPathData`, is `[Serializable]`, has a parameterless constructor, and passes the belt on in a second
+constructor. One component can implement both `IMapFileFormat` and `IMapDataExtension`:
+
+```csharp
+[Serializable]
+public sealed class QuackLevelFile : BeltPathData
+{
+    [SerializeField] private int duckCount;
+
+    public QuackLevelFile() { }                                   // JsonUtility needs it
+    public QuackLevelFile(BeltPathData path) : base(path.Nodes, path.IsClosed) { }
+
+    public int DuckCount { get => duckCount; set => duckCount = value; }
+}
+
+public sealed class DuckExtension : MapEditorExtension, IMapFileFormat, IMapDataExtension
+{
+    private MapEditorContext context;
+    private int duckCount;
+
+    public override void Attach(MapEditorContext editorContext) { context = editorContext; /* build UI */ }
+
+    // IMapFileFormat: the file type of the map
+    public BeltPathData Create(BeltPathData path) { return new QuackLevelFile(path); }
+    public BeltPathData Parse(string json) { return JsonUtility.FromJson<QuackLevelFile>(json); }
+
+    // IMapDataExtension: undo/redo, save, load, New
+    public string CaptureState() { return duckCount.ToString(); }
+    public void RestoreState(string state) { duckCount = int.Parse(state); }
+    public void WriteTo(BeltPathData file) { ((QuackLevelFile)file).DuckCount = duckCount; }
+    public void ReadFrom(BeltPathData file) { duckCount = ((QuackLevelFile)file).DuckCount; }
+    public void ClearData() { duckCount = 0; }
+}
+```
+
+When the UI changes `duckCount`, set the field first and then call `context.NotifyDataChanged()`. Maps saved before
+the extension existed have no extra fields; `JsonUtility` leaves them at their defaults, so `ReadFrom` must accept that.
+Only one extension per editor may implement `IMapFileFormat`.
+
+Undo and redo restore the extension data before the editor refreshes, so `Refresh()` always sees the restored data.
+A complete example with a click tool, a layer, data and a file format is `MarkerExtension.cs` in the BeltPathDev
+development project (`Assets/DevExtensions/`); it is not shipped with the package.
 
 ## Camera framing
 
@@ -180,7 +274,7 @@ reproduced; ducks use a uniform scale.
 | `Shaders/` | `BeltPath/Water Flow`, `BeltPath/Water Caustics`, `BeltPath/Channel Wall` |
 | `Materials/` | Channel, water and caustics materials using the pack shaders |
 | `Settings/` | `BeltMeshSettings.asset`, the default channel and water dimensions |
-| `MapEditor/Runtime/` | Standalone map editor: `MapDocument`, `MapEditorController`, top view and profile elements, `MapFileStore` (assembly `Tool.BeltPath.MapEditor`) |
+| `MapEditor/Runtime/` | Standalone map editor: `MapDocument`, `MapEditorController`, top view and profile elements, `MapFileStore`, and the extension API (`MapEditorExtension`, `MapEditorContext`, `IMapDataExtension`, `IMapFileFormat`, `IMapTopViewLayer`, `IMapTopViewTool`) (assembly `Tool.BeltPath.MapEditor`) |
 | `MapEditor/Editor/` | Scene creator and the Windows build menu (assembly `Tool.BeltPath.MapEditor.Editor`) |
 | `Tests/Editor/` | EditMode tests (assembly `Tool.BeltPath.Tests`); `Data/figure_eight.json` is the test sample (closed figure-eight belt, 7 custom-handle nodes) |
 

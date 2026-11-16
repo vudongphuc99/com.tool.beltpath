@@ -11,10 +11,17 @@ namespace Tool.BeltPath.MapEditor
         private const string SearchPattern = "*" + Extension;
 
         private readonly string folder;
+        private readonly IMapFileFormat format;
 
         public MapFileStore(string folder)
+            : this(folder, new BeltPathFileFormat())
+        {
+        }
+
+        public MapFileStore(string folder, IMapFileFormat format)
         {
             this.folder = folder;
+            this.format = format;
         }
 
         /// <summary>Map names (file names without extension), sorted.</summary>
@@ -76,7 +83,7 @@ namespace Tool.BeltPath.MapEditor
 
             try
             {
-                data = BeltPathData.FromJson(File.ReadAllText(PathOf(name)));
+                data = format.Parse(File.ReadAllText(PathOf(name)));
                 error = data == null ? "File is empty." : null;
                 return data != null;
             }

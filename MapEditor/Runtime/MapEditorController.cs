@@ -25,6 +25,7 @@ namespace Tool.BeltPath.MapEditor
         [SerializeField] private Camera viewCamera;
         [SerializeField] private BeltCameraFitter cameraFitter;
         [SerializeField] private UIDocument uiDocument;
+        [SerializeField] private MapEditorExtension[] extensions = System.Array.Empty<MapEditorExtension>();
 
         private readonly MapDocument document = new MapDocument();
         private readonly MapEditorState state = new MapEditorState();
@@ -38,16 +39,20 @@ namespace Tool.BeltPath.MapEditor
         private MapEditorPanel panel;
         private TopViewElement topView;
         private ElevationProfileElement profile;
+        private MapEditorExtensionSet extensionSet;
+        private MapEditorContext context;
 
         private void OnEnable()
         {
             viewCamera.rect = new Rect(0f, 0f, ViewWidthFraction, 1f);
-            store = new MapFileStore(ResolveOutputFolder(MapsFolderName));
+            extensionSet = new MapEditorExtensionSet(extensions);
+            store = new MapFileStore(ResolveOutputFolder(MapsFolderName), extensionSet.FileFormat);
             imageStore = new MapImageStore(ResolveOutputFolder(ImagesFolderName));
             imageStore.EnsureFolder();
-            history = new MapHistory(document);
+            history = new MapHistory(document, extensionSet.DataExtensions);
             history.Changed += HandleHistoryChanged;
             BuildPanel();
+            AttachExtensions();
             document.Changed += HandleDocumentChanged;
             state.Changed += HandleStateChanged;
             panel.SetMapNames(store.ListNames());
@@ -59,25 +64,36 @@ namespace Tool.BeltPath.MapEditor
 
         private void OnDisable()
         {
+            if (history == null)
+            {
+                // OnEnable failed before the editor was built (for example two file formats).
+                return;
+            }
+
+            DetachExtensions();
             history.Changed -= HandleHistoryChanged;
             history.Detach();
             ReleaseReferenceImage();
             document.Changed -= HandleDocumentChanged;
             state.Changed -= HandleStateChanged;
-            beltView.Clear();
+            if (beltView != null)
+            {
+                // Closing the scene can destroy the view before this controller is disabled.
+                beltView.Clear();
+            }
         }
 
         private void Update()
         {
             var keyboard = Keyboard.current;
-            if (keyboard == null)
+            if (keyboard == null || history == null)
             {
                 return;
             }
 
             var typing = IsTypingInTextField();
             state.InsertHeld = !typing && keyboard.cKey.isPressed;
-            if (typing)
+            if (typing || extensionSet.HandleKeyboard(keyboard))
             {
                 return;
             }
@@ -176,10 +192,29 @@ namespace Tool.BeltPath.MapEditor
             panel.ImageVisibleChanged += topView.SetReferenceVisible;
         }
 
+        private void AttachExtensions()
+        {
+            context = new MapEditorContext(document, state, history, panel, topView, beltView);
+            extensionSet.Attach(context);
+            context.DataChanged += RefreshPanel;
+        }
+
+        private void DetachExtensions()
+        {
+            context.DataChanged -= RefreshPanel;
+            state.ActiveTool = null;
+            extensionSet.Detach();
+        }
+
+        // The extension data changes before the document: the document change refreshes the editor, which must see it.
         private void HandleNewClicked()
         {
             state.ClearSelection();
-            document.Clear();
+            history.RunAsOneStep(() =>
+            {
+                extensionSet.ClearData();
+                document.Clear();
+            });
             panel.SetStatus("New map.");
         }
 
@@ -402,6 +437,7 @@ namespace Tool.BeltPath.MapEditor
             panel.SetHandlesVisible(state.HandlesVisible);
             RefreshPointInspector();
             RefreshHandleOptions();
+            extensionSet.Refresh();
             HandleHistoryChanged();
             panel.SetModeText(state.Mode == MapEditMode.Place ? "Mode: Place (H)" : "Mode: Height (H)");
         }
@@ -494,7 +530,9 @@ namespace Tool.BeltPath.MapEditor
                 return;
             }
 
-            var saved = store.TrySave(mapName, document.ToPathData(beltView.Shape), out var error);
+            var file = extensionSet.FileFormat.Create(document.ToPathData(beltView.Shape));
+            extensionSet.WriteTo(file);
+            var saved = store.TrySave(mapName, file, out var error);
             panel.SetStatus(saved ? $"Saved Output/Maps/{mapName}.json" : $"Save failed: {error}");
             panel.SetMapNames(store.ListNames());
         }
@@ -508,7 +546,11 @@ namespace Tool.BeltPath.MapEditor
             }
 
             state.ClearSelection();
-            document.FromPathData(data, beltView.Shape);
+            history.RunAsOneStep(() =>
+            {
+                extensionSet.ReadFrom(data);
+                document.FromPathData(data, beltView.Shape);
+            });
             panel.MapName = mapName;
             panel.SetStatus($"Loaded {mapName}.");
         }

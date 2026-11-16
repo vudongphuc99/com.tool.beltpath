@@ -126,6 +126,18 @@ namespace Tool.BeltPath.MapEditor
             return false;
         }
 
+        /// <summary>Puts a row of extension UI right above the top view.</summary>
+        public void AddSection(VisualElement section)
+        {
+            Insert(IndexOf(TopView), section);
+        }
+
+        /// <summary>Marks a field of an extension as a text field, so shortcuts do not run while it has focus.</summary>
+        public void RegisterTextEditor(VisualElement field)
+        {
+            textEditors.Add(field);
+        }
+
         public void SetUndoRedoEnabled(bool canUndo, bool canRedo)
         {
             undoButton.SetEnabled(canUndo);

@@ -14,6 +14,7 @@ namespace Tool.BeltPath.MapEditor
         private bool handlesVisible;
         private bool insertHeld;
         private bool insertLatched;
+        private IMapTopViewTool activeTool;
 
         public event Action Changed;
 
@@ -105,6 +106,22 @@ namespace Tool.BeltPath.MapEditor
 
         /// <summary>Clicks insert a point on the belt instead of adding one at the end.</summary>
         public bool IsInserting => insertHeld || insertLatched;
+
+        /// <summary>The click tool of an extension; while set, left and right clicks on the top view go to it.</summary>
+        public IMapTopViewTool ActiveTool
+        {
+            get => activeTool;
+            set
+            {
+                if (activeTool == value)
+                {
+                    return;
+                }
+
+                activeTool = value;
+                Changed?.Invoke();
+            }
+        }
 
         public MapEditMode Mode
         {

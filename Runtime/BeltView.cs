@@ -39,6 +39,7 @@ namespace Tool.BeltPath
         public BeltPath Path { get; private set; }
 
         /// <summary>The data the current <see cref="Path"/> was built from; null when nothing is built.</summary>
+        [field: NonSerialized]
         public BeltPathData BuiltData { get; private set; }
 
 #if UNITY_EDITOR

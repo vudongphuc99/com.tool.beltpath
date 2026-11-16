@@ -9,7 +9,8 @@ namespace Tool.BeltPath.MapEditor
     /// adds a point (when the place tool is on) or clears the selection. Dragging a selected point moves the whole
     /// selection (Place mode) or changes its elevation (Height mode); a click on a point selects only it. While the
     /// insert mode is on, a click puts a point on the belt. Right click removes, middle drag pans, the wheel zooms,
-    /// and holding Shift turns snapping off.
+    /// and holding Shift turns snapping off. While an extension tool is active, the left and right buttons go to it
+    /// instead; pan and zoom stay here.
     /// </summary>
     public sealed class TopViewManipulator : PointerManipulator
     {
@@ -27,7 +28,8 @@ namespace Tool.BeltPath.MapEditor
             Nodes,
             Handle,
             Pan,
-            Marquee
+            Marquee,
+            Tool
         }
 
         private readonly MapDocument document;
@@ -42,6 +44,7 @@ namespace Tool.BeltPath.MapEditor
         private Vector2 lastPointer;
         private bool dragMoved;
         private bool draggedHandleIsOut;
+        private int toolButton;
 
         // Snapshot of the points being dragged, taken when the drag starts.
         private readonly List<int> dragIndices = new List<int>();
@@ -79,6 +82,12 @@ namespace Tool.BeltPath.MapEditor
         private void HandlePointerDown(PointerDownEvent evt)
         {
             var pixel = (Vector2)evt.localPosition;
+            if (state.ActiveTool != null && evt.button != MiddleButton)
+            {
+                BeginToolDrag(evt);
+                return;
+            }
+
             switch (evt.button)
             {
                 case LeftButton:
@@ -91,6 +100,18 @@ namespace Tool.BeltPath.MapEditor
                     BeginDrag(DragKind.Pan, evt);
                     break;
             }
+        }
+
+        private void BeginToolDrag(PointerDownEvent evt)
+        {
+            toolButton = evt.button;
+            BeginDrag(DragKind.Tool, evt);
+            state.ActiveTool.PointerDown(ToPointer(evt.localPosition, evt.shiftKey, evt.altKey));
+        }
+
+        private MapPointer ToPointer(Vector2 pixel, bool shift, bool alt)
+        {
+            return new MapPointer(pixel, topView.View.PixelToCell(pixel), toolButton, shift, alt);
         }
 
         private void HandleLeftDown(Vector2 pixel, PointerDownEvent evt)
@@ -248,6 +269,9 @@ namespace Tool.BeltPath.MapEditor
                 case DragKind.Marquee:
                     DragMarquee(pixel);
                     break;
+                case DragKind.Tool:
+                    state.ActiveTool?.PointerMove(ToPointer(pixel, evt.shiftKey, evt.altKey));
+                    break;
             }
         }
 
@@ -322,7 +346,11 @@ namespace Tool.BeltPath.MapEditor
             drag = DragKind.None;
             target.ReleasePointer(evt.pointerId);
             CloseGesture();
-            if (kind == DragKind.Marquee)
+            if (kind == DragKind.Tool)
+            {
+                state.ActiveTool?.PointerUp(ToPointer(evt.localPosition, evt.shiftKey, evt.altKey));
+            }
+            else if (kind == DragKind.Marquee)
             {
                 FinishMarquee(evt);
             }

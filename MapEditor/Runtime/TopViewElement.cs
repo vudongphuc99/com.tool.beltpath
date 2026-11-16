@@ -31,6 +31,7 @@ namespace Tool.BeltPath.MapEditor
         private readonly MapDocument document;
         private readonly MapEditorState state;
         private readonly List<Label> labels = new List<Label>();
+        private readonly List<IMapTopViewLayer> layers = new List<IMapTopViewLayer>();
         private IReadOnlyList<Vector3> pathGround = System.Array.Empty<Vector3>();
         private Vector2 hoverPixel;
         private bool hasHover;
@@ -60,6 +61,19 @@ namespace Tool.BeltPath.MapEditor
         public void SetPath(IReadOnlyList<Vector3> groundPoints)
         {
             pathGround = groundPoints;
+        }
+
+        /// <summary>Adds drawing of an extension; layers are painted in the order added.</summary>
+        public void AddLayer(IMapTopViewLayer layer)
+        {
+            layers.Add(layer);
+            MarkDirtyRepaint();
+        }
+
+        public void RemoveLayer(IMapTopViewLayer layer)
+        {
+            layers.Remove(layer);
+            MarkDirtyRepaint();
         }
 
         /// <summary>Index of the point under a pixel, or <see cref="MapEditorState.NoSelection"/>.</summary>
@@ -233,6 +247,7 @@ namespace Tool.BeltPath.MapEditor
             var painter = context.painter2D;
             DrawGrid(painter);
             DrawPath(painter);
+            DrawLayers(painter);
             DrawNodes(painter);
             DrawHandles(painter);
             DrawInsertionGhost(painter);
@@ -281,6 +296,14 @@ namespace Tool.BeltPath.MapEditor
             }
 
             painter.Stroke();
+        }
+
+        private void DrawLayers(Painter2D painter)
+        {
+            foreach (var layer in layers)
+            {
+                layer.Draw(painter, View);
+            }
         }
 
         private void DrawNodes(Painter2D painter)
