@@ -11,14 +11,16 @@ Unity Package Manager package `com.tool.beltpath` (Unity 6000.3+). Its dependenc
 From git, add one line to the game's `Packages/manifest.json` (pin a tag so the game does not break when the package changes):
 
 ```json
-"com.tool.beltpath": "https://github.com/<user>/<repo>.git#v1.0.0"
+"com.tool.beltpath": "https://github.com/vudongphuc99/com.tool.beltpath.git#v1.0.0"
 ```
 
-Private repo: use the SSH form `git@github.com:<user>/<repo>.git#v1.0.0` (Unity cannot ask for a password).
+If the repo is private, use the SSH form `git@github.com:vudongphuc99/com.tool.beltpath.git#v1.0.0` (Unity cannot ask for a password).
 
-To edit the package while developing a game, point to the local folder instead:
-`"com.tool.beltpath": "file:../../Packages/com.tool.beltpath"`, and add `"testables": ["com.tool.beltpath"]` to the
-manifest to run the package tests in Test Runner.
+## Developing the package
+
+The source of truth is this folder, embedded in the `BeltPathDev` Unity project (`BeltPathDev/Packages/com.tool.beltpath`).
+Edit and test it there (add `"testables": ["com.tool.beltpath"]` to that project's `Packages/manifest.json` to run the
+package tests in Test Runner). Games install a tagged copy from git and never edit it.
 
 To release a change: raise `version` in `package.json`, add an entry to `CHANGELOG.md`, commit, create an annotated tag
 `vX.Y.Z` and push both.
