@@ -5,8 +5,23 @@ meshes for it. Namespace `Tool.BeltPath`. Requires the `com.unity.splines` packa
 
 ## Install
 
-1. Install **Splines** from Package Manager (`com.unity.splines`).
-2. Import `BeltPath.unitypackage`.
+Unity Package Manager package `com.tool.beltpath` (Unity 6000.3+). Its dependencies (`com.unity.splines`,
+`com.unity.inputsystem`) are installed automatically.
+
+From git, add one line to the game's `Packages/manifest.json` (pin a tag so the game does not break when the package changes):
+
+```json
+"com.tool.beltpath": "https://github.com/<user>/<repo>.git#v1.0.0"
+```
+
+Private repo: use the SSH form `git@github.com:<user>/<repo>.git#v1.0.0` (Unity cannot ask for a password).
+
+To edit the package while developing a game, point to the local folder instead:
+`"com.tool.beltpath": "file:../../Packages/com.tool.beltpath"`, and add `"testables": ["com.tool.beltpath"]` to the
+manifest to run the package tests in Test Runner.
+
+To release a change: raise `version` in `package.json`, add an entry to `CHANGELOG.md`, commit, create an annotated tag
+`vX.Y.Z` and push both.
 
 Materials and `BeltMeshSettings` ship with the pack; `BeltView` fills them in when you add the component.
 
@@ -55,7 +70,7 @@ the channel really follows, with rounded corners.
 
 ## Map Editor (standalone tool for level designers)
 
-Menu `BeltPath/Create Map Editor Scene` creates `MapEditor/MapEditor.unity`; `BeltPath/Build Map Editor (Windows)`
+Menu `BeltPath/Create Map Editor Scene` creates `Assets/MapEditor/MapEditor.unity` in the game project (the package folder is read-only when installed from git); `BeltPath/Build Map Editor (Windows)`
 builds `Builds/MapEditor/BeltMapEditor.exe`. The screen is split in two:
 
 - **A (left)**: display only, the belt (channel + water) under a tilted `PlaneRoot` (see Camera framing), rebuilt after every edit.
@@ -163,9 +178,9 @@ reproduced; ducks use a uniform scale.
 | `Shaders/` | `BeltPath/Water Flow`, `BeltPath/Water Caustics`, `BeltPath/Channel Wall` |
 | `Materials/` | Channel, water and caustics materials using the pack shaders |
 | `Settings/` | `BeltMeshSettings.asset`, the default channel and water dimensions |
-| `Samples/` | `figure_eight.json` (closed figure-eight belt, 7 custom-handle nodes) |
-| `MapEditor/` | Standalone map editor: `MapDocument`, `MapEditorController`, top view and profile elements, `MapFileStore` (assembly `Tool.BeltPath.MapEditor`); `MapEditor/Editor/` has the scene creator and the Windows build menu |
-| `Tests/Editor/` | EditMode tests (assembly `Tool.BeltPath.Tests`) |
+| `MapEditor/Runtime/` | Standalone map editor: `MapDocument`, `MapEditorController`, top view and profile elements, `MapFileStore` (assembly `Tool.BeltPath.MapEditor`) |
+| `MapEditor/Editor/` | Scene creator and the Windows build menu (assembly `Tool.BeltPath.MapEditor.Editor`) |
+| `Tests/Editor/` | EditMode tests (assembly `Tool.BeltPath.Tests`); `Data/figure_eight.json` is the test sample (closed figure-eight belt, 7 custom-handle nodes) |
 
 ## Notes
 
