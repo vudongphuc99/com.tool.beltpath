@@ -5,14 +5,17 @@ using UnityEngine.UIElements;
 
 namespace Tool.BeltPath.MapEditor
 {
-    /// <summary>The tool half of the screen (B): toolbar, top view, elevation profile, status line. Layout only; it raises events and the controller decides what they do.</summary>
+    /// <summary>The tool side of the screen (B): toolbar, top view, elevation profile, status line. Layout only; it raises events and the controller decides what they do.</summary>
     public sealed class MapEditorPanel : VisualElement
     {
-        private const float ToolbarGapPixels = 6f;
-        private const float RowHeightPixels = 28f;
-        private const float ProfileHeightPixels = 170f;
+        private const float ToolbarGapPixels = 4f;
+        private const float RowHeightPixels = 22f;
+        private const float ProfileHeightPixels = 120f;
         private const float NameFieldWidthPixels = 160f;
-        private const int FontSize = 13;
+        private const int FontSize = 11;
+        private const int HelpFontSize = 9;
+        private static readonly Color ToolOnColor = new Color(0.16f, 0.42f, 0.75f);
+        private static readonly Color DarkTextColor = new Color(0.08f, 0.08f, 0.1f);
         private const float CoordinateFieldWidthPixels = 150f;
         private const float CoordinateLabelWidthPixels = 62f;
         private const float HandleFieldWidthPixels = 96f;
@@ -21,7 +24,7 @@ namespace Tool.BeltPath.MapEditor
         private const float DefaultImageOpacity = 0.5f;
         private const float OpacitySliderWidthPixels = 110f;
         private const string HelpText =
-            "Click: add/select   Drag empty area: box select   1: place tool on/off   Hold C / Insert: click a belt to insert a point   Drag: move   Drag handle: curve (Alt: one side)   Ctrl/Cmd+Z / Y: undo / redo   Right click: delete   Middle drag: pan   Wheel: zoom   Shift: free (no snap)   H: height mode   T: show/hide handles   R: auto curve   =/-: scale selection (Shift: fine)   Del: delete   Ctrl+S: save";
+            "Click: add/select   Drag empty area: box select   1: place tool on/off (off = view only)   Hold C / Insert: click a belt to insert a point   Drag: move   Drag handle: curve (Alt: one side)   Ctrl/Cmd+Z / Y: undo / redo   Right click: delete   Middle drag: pan   Wheel: zoom   Shift: free (no snap)   H: height mode   T: show/hide handles   R: auto curve   =/-: scale selection (Shift: fine)   Del: delete   Ctrl+S: save";
 
         private readonly TextField nameField = new TextField();
         private readonly DropdownField loadDropdown = new DropdownField();
@@ -29,7 +32,9 @@ namespace Tool.BeltPath.MapEditor
         private readonly Toggle insertToggle = new Toggle("Insert (C)");
         private readonly Button modeButton = new Button();
         private readonly Label statusLabel = new Label();
-        private readonly Toggle placeToggle = new Toggle("Place (1)") { value = true };
+        private readonly Button placeButton = new Button { text = "Place (1)" };
+        private readonly List<VisualElement> placeToolControls = new List<VisualElement>();
+        private bool placeOn = true;
         private readonly Toggle handlesToggle = new Toggle("Handles (T)");
         private readonly Label pointLabel = new Label();
         private readonly FloatField xField = new FloatField("X") { isDelayed = true };
@@ -58,9 +63,10 @@ namespace Tool.BeltPath.MapEditor
             Profile = profile;
             style.flexDirection = FlexDirection.Column;
             style.backgroundColor = new Color(0.14f, 0.15f, 0.17f);
+            style.color = Color.white;
+            style.fontSize = FontSize;
             Add(CreateToolbar());
             Add(CreateFileRow());
-            Add(CreateImageRow());
             Add(CreatePointRow());
             Add(CreateHandleRows());
             textEditors.Add(nameField);
@@ -71,6 +77,7 @@ namespace Tool.BeltPath.MapEditor
             Add(statusLabel);
             Add(CreateHelp());
             StyleLabel(statusLabel);
+            StyleControls(this);
         }
 
         public event Action NewClicked;
@@ -129,6 +136,7 @@ namespace Tool.BeltPath.MapEditor
         /// <summary>Puts a row of extension UI right above the top view.</summary>
         public void AddSection(VisualElement section)
         {
+            StyleControls(section);
             Insert(IndexOf(TopView), section);
         }
 
@@ -196,9 +204,32 @@ namespace Tool.BeltPath.MapEditor
             handlesToggle.SetValueWithoutNotify(visible);
         }
 
+        /// <summary>Shows the state of the place tool: a lit button, and the controls that only make sense with it on.</summary>
         public void SetPlaceEnabled(bool enabled)
         {
-            placeToggle.SetValueWithoutNotify(enabled);
+            placeOn = enabled;
+            if (!enabled)
+            {
+                // The controller drops insert mode with the tool; keep the hidden toggle in step.
+                insertToggle.SetValueWithoutNotify(false);
+            }
+
+            if (enabled)
+            {
+                placeButton.style.backgroundColor = ToolOnColor;
+                placeButton.style.color = Color.white;
+            }
+            else
+            {
+                placeButton.style.backgroundColor = StyleKeyword.Null;
+                placeButton.style.color = DarkTextColor;
+            }
+
+            var display = enabled ? DisplayStyle.Flex : DisplayStyle.None;
+            foreach (var control in placeToolControls)
+            {
+                control.style.display = display;
+            }
         }
 
         public void SetImageNames(IReadOnlyList<string> names)
@@ -216,6 +247,9 @@ namespace Tool.BeltPath.MapEditor
         private VisualElement CreateToolbar()
         {
             var row = CreateRow();
+            placeButton.clicked += () => PlaceToggled?.Invoke(!placeOn);
+            placeButton.style.marginRight = ToolbarGapPixels;
+            row.Add(placeButton);
             row.Add(CreateButton("New", () => NewClicked?.Invoke()));
             undoButton.clicked += () => UndoClicked?.Invoke();
             undoButton.style.marginRight = ToolbarGapPixels;
@@ -224,16 +258,14 @@ namespace Tool.BeltPath.MapEditor
             redoButton.style.marginRight = ToolbarGapPixels;
             row.Add(redoButton);
             closedToggle.RegisterValueChangedCallback(evt => ClosedChanged?.Invoke(evt.newValue));
-            row.Add(closedToggle);
+            AddPlaceToolControl(row, closedToggle);
             insertToggle.RegisterValueChangedCallback(evt => InsertToggled?.Invoke(evt.newValue));
-            row.Add(insertToggle);
-            placeToggle.RegisterValueChangedCallback(evt => PlaceToggled?.Invoke(evt.newValue));
-            row.Add(placeToggle);
+            AddPlaceToolControl(row, insertToggle);
             handlesToggle.RegisterValueChangedCallback(evt => HandlesToggled?.Invoke(evt.newValue));
-            row.Add(handlesToggle);
+            AddPlaceToolControl(row, handlesToggle);
             modeButton.clicked += () => ModeToggleClicked?.Invoke();
             row.Add(modeButton);
-            row.Add(CreateButton("Auto (R)", () => AutoClicked?.Invoke()));
+            AddPlaceToolControl(row, CreateButton("Auto (R)", () => AutoClicked?.Invoke()));
             row.Add(CreateButton("Scale - (-)", () => ScaleClicked?.Invoke(1f / MapSnapper.ScaleStep)));
             row.Add(CreateButton("Scale + (=)", () => ScaleClicked?.Invoke(MapSnapper.ScaleStep)));
             return row;
@@ -248,12 +280,19 @@ namespace Tool.BeltPath.MapEditor
             loadDropdown.style.width = NameFieldWidthPixels;
             row.Add(loadDropdown);
             row.Add(CreateButton("Load", () => LoadClicked?.Invoke(loadDropdown.value)));
+            AddImageControls(row);
             return row;
         }
 
-        private VisualElement CreateImageRow()
+        // Controls of the place tool are hidden while it is off (see SetPlaceEnabled).
+        private void AddPlaceToolControl(VisualElement row, VisualElement control)
         {
-            var row = CreateRow();
+            placeToolControls.Add(control);
+            row.Add(control);
+        }
+
+        private void AddImageControls(VisualElement row)
+        {
             imageDropdown.style.width = NameFieldWidthPixels;
             row.Add(imageDropdown);
             row.Add(CreateButton("Load Image", () => ImageLoadClicked?.Invoke(imageDropdown.value)));
@@ -263,7 +302,6 @@ namespace Tool.BeltPath.MapEditor
             row.Add(opacitySlider);
             showImageToggle.RegisterValueChangedCallback(evt => ImageVisibleChanged?.Invoke(evt.newValue));
             row.Add(showImageToggle);
-            return row;
         }
 
         private VisualElement CreatePointRow()
@@ -376,6 +414,15 @@ namespace Tool.BeltPath.MapEditor
             return element == field || field.Contains(element);
         }
 
+        // The panel is dark with white text, but buttons and input boxes keep the light look of the theme: their text
+        // is dark so it contrasts with their own background. Toggle labels sit next to their box, not far away.
+        private static void StyleControls(VisualElement root)
+        {
+            root.Query<Button>().ForEach(button => button.style.color = DarkTextColor);
+            root.Query(className: BaseField<string>.inputUssClassName).ForEach(input => input.style.color = DarkTextColor);
+            root.Query<Toggle>().ForEach(toggle => toggle.labelElement.style.minWidth = 0f);
+        }
+
         private static VisualElement CreateRow()
         {
             var row = new VisualElement();
@@ -398,6 +445,7 @@ namespace Tool.BeltPath.MapEditor
         {
             var help = new Label(HelpText);
             StyleLabel(help);
+            help.style.fontSize = HelpFontSize;
             help.style.whiteSpace = WhiteSpace.Normal;
             help.style.opacity = 0.6f;
             return help;

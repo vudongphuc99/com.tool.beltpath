@@ -147,7 +147,7 @@ namespace Tool.BeltPath.MapEditor
 
         private void HandlePointerDown(PointerDownEvent evt)
         {
-            if (evt.button != 0)
+            if (evt.button != 0 || !state.PlaceEnabled)
             {
                 return;
             }

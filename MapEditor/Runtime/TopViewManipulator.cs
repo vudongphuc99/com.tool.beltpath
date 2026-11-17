@@ -88,6 +88,11 @@ namespace Tool.BeltPath.MapEditor
                 return;
             }
 
+            if (!state.PlaceEnabled && evt.button != MiddleButton)
+            {
+                return;
+            }
+
             switch (evt.button)
             {
                 case LeftButton:

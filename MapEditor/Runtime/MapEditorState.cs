@@ -56,7 +56,7 @@ namespace Tool.BeltPath.MapEditor
             }
         }
 
-        /// <summary>When on, a click on empty space adds a point (in Place mode); when off it only clears the selection.</summary>
+        /// <summary>When on, points can be added, selected and edited; when off the views are read-only (pan and zoom only).</summary>
         public bool PlaceEnabled
         {
             get => placeEnabled;

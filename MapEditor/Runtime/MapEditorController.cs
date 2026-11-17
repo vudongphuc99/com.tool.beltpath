@@ -7,13 +7,13 @@ using UnityEngine.UIElements;
 namespace Tool.BeltPath.MapEditor
 {
     /// <summary>
-    /// Composition root of the map editor. The left half of the screen is the camera view of the belt (A); the right
-    /// half is the tool panel (B). Every change of the map rebuilds the belt and redraws the panel.
+    /// Composition root of the map editor. The left 40% of the screen is the camera view of the belt (A); the right
+    /// 60% is the tool panel (B). Every change of the map rebuilds the belt and redraws the panel.
     /// </summary>
     public sealed class MapEditorController : MonoBehaviour
     {
-        private const float ViewWidthFraction = 0.5f;
-        private const float PanelWidthPercent = 50f;
+        private const float ViewWidthFraction = 0.4f;
+        private const float PanelWidthPercent = 60f;
         private const int MinBeltNodes = 2;
         private const int MinScaleCount = 2;
         private const string OutputFolderName = "Output";
@@ -92,7 +92,7 @@ namespace Tool.BeltPath.MapEditor
             }
 
             var typing = IsTypingInTextField();
-            state.InsertHeld = !typing && keyboard.cKey.isPressed;
+            state.InsertHeld = !typing && state.PlaceEnabled && keyboard.cKey.isPressed;
             if (typing || extensionSet.HandleKeyboard(keyboard))
             {
                 return;
@@ -103,14 +103,9 @@ namespace Tool.BeltPath.MapEditor
                 ToggleMode();
             }
 
-            if (keyboard.tKey.wasPressedThisFrame)
-            {
-                state.HandlesVisible = !state.HandlesVisible;
-            }
-
             if (keyboard.digit1Key.wasPressedThisFrame)
             {
-                state.PlaceEnabled = !state.PlaceEnabled;
+                SetPlaceEnabled(!state.PlaceEnabled);
             }
 
             var scaleDirection = ReadScaleDirection(keyboard);
@@ -120,14 +115,9 @@ namespace Tool.BeltPath.MapEditor
                 ScaleSelection(scaleDirection > 0 ? step : 1f / step);
             }
 
-            if (keyboard.rKey.wasPressedThisFrame)
+            if (state.PlaceEnabled)
             {
-                ClearSelectedHandles();
-            }
-
-            if (keyboard.deleteKey.wasPressedThisFrame || keyboard.backspaceKey.wasPressedThisFrame)
-            {
-                DeleteSelected();
+                HandlePlaceToolKeys(keyboard);
             }
 
             if (HandleUndoRedoKeys(keyboard))
@@ -138,6 +128,25 @@ namespace Tool.BeltPath.MapEditor
             if (keyboard.sKey.wasPressedThisFrame && keyboard.ctrlKey.isPressed)
             {
                 Save(panel.MapName);
+            }
+        }
+
+        // Shortcuts that edit the belt: they only work while the place tool is on.
+        private void HandlePlaceToolKeys(Keyboard keyboard)
+        {
+            if (keyboard.tKey.wasPressedThisFrame)
+            {
+                state.HandlesVisible = !state.HandlesVisible;
+            }
+
+            if (keyboard.rKey.wasPressedThisFrame)
+            {
+                ClearSelectedHandles();
+            }
+
+            if (keyboard.deleteKey.wasPressedThisFrame || keyboard.backspaceKey.wasPressedThisFrame)
+            {
+                DeleteSelected();
             }
         }
 
@@ -382,7 +391,20 @@ namespace Tool.BeltPath.MapEditor
 
         private void HandlePlaceToggled(bool on)
         {
+            SetPlaceEnabled(on);
+        }
+
+        // Turning the place tool off makes the views read-only: nothing stays selected and insert mode is dropped.
+        private void SetPlaceEnabled(bool on)
+        {
             state.PlaceEnabled = on;
+            if (on)
+            {
+                return;
+            }
+
+            state.ClearSelection();
+            state.InsertLatched = false;
         }
 
         private void LoadReferenceImage(string fileName)

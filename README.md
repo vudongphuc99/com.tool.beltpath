@@ -81,15 +81,15 @@ the channel really follows, with rounded corners.
 Menu `BeltPath/Create Map Editor Scene` creates `Assets/MapEditor/MapEditor.unity` in the game project (the package folder is read-only when installed from git); `BeltPath/Build Map Editor (Windows)`
 builds `Builds/MapEditor/BeltMapEditor.exe`. The screen is split in two:
 
-- **A (left)**: display only, the belt (channel + water) under a tilted `PlaneRoot` (see Camera framing), rebuilt after every edit.
-- **B (right)**: the tool. Top view of the ground plane (x, z in cells), an elevation profile below it, and a toolbar.
+- **A (left, 40%)**: display only, the belt (channel + water) under a tilted `PlaneRoot` (see Camera framing), rebuilt after every edit.
+- **B (right, 60%)**: the tool. Top view of the ground plane (x, z in cells), an elevation profile below it, and a toolbar.
 
 | Input | Action |
 |---|---|
-| Left click on empty space | Add a point at the end of the belt (snapped to the grid); with the place tool off (`1`) it only clears the selection |
+| Left click on empty space | Add a point at the end of the belt (snapped to the grid) |
 | Left drag on empty space | Box select: every point inside the box is selected |
 | Drag a selected point | Move the whole selection (Height mode: change all their elevations); a click selects only that point |
-| `1` / **Place (1)** | Turn the place tool (adding points on click) on or off |
+| `1` / **Place (1)** | Turn the place tool (the editing tool, on by default) on or off. While it is off, the Closed / Insert / Handles / Auto controls are hidden, the selection is cleared, the top view and the profile are read-only (only middle drag pan and wheel zoom work) and `C`, `T`, `R`, `Del` are ignored. Undo / redo, save, scale and `H` still work |
 | Hold `C` (or the **Insert (C)** toggle), then click | A red ghost follows the nearest spot of the drawn belt; the click inserts a point exactly there (elevation taken from the belt) |
 | `Ctrl`/`Cmd` + `Z`, `Ctrl`/`Cmd` + `Y` (or `Shift`+`Z`), **Undo / Redo** | Undo and redo (up to 100 steps). A whole mouse drag is one step; New and Load can be undone too |
 | `T` / **Handles (T)** | Show or hide the curve handles and, for the selected point, the handle options (off by default; hiding only affects display and editing, not the belt) |
@@ -110,8 +110,8 @@ and press Enter to apply them exactly (no snapping, height clamped to 0-10). Sho
 Points are colored by elevation (blue low, orange high) and labelled `index e=height`. Points are stored as ground
 positions; saving converts them to level grid coordinates with the plane shift of the scene's `BeltView` shape
 (`grid.y = ground.y - shift * elevation`). Maps are JSON files in `Output/Maps` next to the .exe (the project folder
-in the editor), in the same format as `BeltPathData`. Reference image: copy .png/.jpg files into `Output/Images` (created next to the .exe), pick one in the third toolbar
-row and press **Load Image**. It is drawn under the grid of the top view only, from ground (0, 0), 40 cells wide, and
+in the editor), in the same format as `BeltPathData`. Reference image: copy .png/.jpg files into `Output/Images` (created next to the .exe), pick one in the file row
+(next to Save / Load) and press **Load Image**. It is drawn under the grid of the top view only, from ground (0, 0), 40 cells wide, and
 follows pan and zoom; **Opacity** and **Show** adjust it, **Clear** removes it. Handle options (three rows under the point coordinates, shown with the handles): a **mode** dropdown - `Auto` (smoothed
 automatically), `Aligned` (handles on one line, own lengths), `Mirrored` (opposite and equally long), `Broken`
 (independent; holding `Alt` while dragging acts as Broken) - the **X/Y/Z offset** of the In and Out handle from the
