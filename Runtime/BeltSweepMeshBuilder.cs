@@ -37,6 +37,15 @@ namespace Tool.BeltPath
             return Sweep(sampler, profile, shape, visual, "BeltWater");
         }
 
+        /// <summary>Flat strip under the channel, as wide as the outer walls plus the shadow spread.</summary>
+        public static Mesh BuildShadow(BeltPath sampler, BeltShapeSettings shape, BeltMeshSettings visual)
+        {
+            var half = (visual.ChannelWidthCells * Half + visual.WallThicknessCells + visual.ShadowSpreadCells)
+                * shape.CellSize;
+            var profile = new[] { new Vector2(-half, 0f), new Vector2(half, 0f) };
+            return Sweep(sampler, profile, shape, visual, "BeltShadow");
+        }
+
         private static Mesh Sweep(BeltPath sampler, Vector2[] points, BeltShapeSettings shape,
             BeltMeshSettings visual, string meshName)
         {

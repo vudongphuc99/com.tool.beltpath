@@ -20,3 +20,5 @@ MonoBehaviour:
   waterDepthCells: 0.18
   sampleStepCells: 0.1
   uvLengthCells: 8.84
+  shadowSpreadCells: 0.3
+  shadowOffsetCells: {x: 0.3, y: -1, z: -0.4}

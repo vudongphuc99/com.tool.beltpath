@@ -23,6 +23,7 @@ namespace Tool.BeltPath
         [SerializeField] private Material channelMaterial;
         [SerializeField] private Material waterMaterial;
         [SerializeField] private Material waterCausticsMaterial;
+        [SerializeField] private Material shadowMaterial;
 
         // Everything created at runtime by this view; assets assigned in the inspector must not be destroyed.
         private readonly List<UnityEngine.Object> ownedObjects =
@@ -47,6 +48,7 @@ namespace Tool.BeltPath
         private const string ChannelMaterialFile = "Materials/BeltChannel.mat";
         private const string WaterMaterialFile = "Materials/BeltWater.mat";
         private const string CausticsMaterialFile = "Materials/BeltWaterCaustics.mat";
+        private const string ShadowMaterialFile = "Materials/BeltShadow.mat";
         private const string MeshSettingsFile = "Settings/BeltMeshSettings.asset";
 
         // Called by Unity when the component is added; fills the slots with the materials and settings of the pack.
@@ -61,6 +63,7 @@ namespace Tool.BeltPath
             channelMaterial = LoadPackAsset<Material>(packRoot, ChannelMaterialFile);
             waterMaterial = LoadPackAsset<Material>(packRoot, WaterMaterialFile);
             waterCausticsMaterial = LoadPackAsset<Material>(packRoot, CausticsMaterialFile);
+            shadowMaterial = LoadPackAsset<Material>(packRoot, ShadowMaterialFile);
             meshSettings = LoadPackAsset<BeltMeshSettings>(packRoot, MeshSettingsFile);
         }
 
@@ -159,6 +162,21 @@ namespace Tool.BeltPath
             BeltSceneUtility.CreateMeshObject(root.transform, "Channel", channel,
                 ResolveMaterial(channelMaterial, FallbackChannelColor));
             BeltSceneUtility.CreateMeshObject(root.transform, "Water", water, WaterMaterials());
+            BuildShadow(root.transform, settings);
+        }
+
+        // Skipped without a shadow material, so scenes made before the shadow existed look the same.
+        private void BuildShadow(Transform root, BeltMeshSettings settings)
+        {
+            if (shadowMaterial == null)
+            {
+                return;
+            }
+
+            var mesh = BeltSweepMeshBuilder.BuildShadow(Path, shape, settings);
+            ownedObjects.Add(mesh);
+            var shadow = BeltSceneUtility.CreateMeshObject(root, "Shadow", mesh, shadowMaterial);
+            shadow.transform.localPosition = settings.ShadowOffsetCells * shape.CellSize;
         }
 
         /// <summary>World-space bounds of the built channel and water; false when nothing is built.</summary>

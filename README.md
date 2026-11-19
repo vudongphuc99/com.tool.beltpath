@@ -29,7 +29,8 @@ Edit and test it there (add `"testables": ["com.tool.beltpath"]` to that project
 package tests in Test Runner). Games install a tagged copy from git and never edit it.
 
 To release a change: raise `version` in `package.json`, add an entry to `CHANGELOG.md`, commit, create an annotated tag
-`vX.Y.Z` and push both.
+`vX.Y.Z` and push both. The version in `package.json` must match the tag: the Package Updater compares the tag with the
+installed `package.json` version, and `PackageVersionTests` fails if `package.json` and `CHANGELOG.md` disagree.
 
 Materials and `BeltMeshSettings` ship with the pack; `BeltView` fills them in when you add the component.
 
@@ -243,6 +244,20 @@ no extra stretch). In this package's axes (ground XZ, screen up = +Z, camera loo
 `Rx(45 degrees) * LookRotation(direction on the ground)`, which the tilted parent supplies. A duck that stands still
 in a pool or slot only needs rotation X = 45. The game's non-uniform plane scale (which slightly shears ducks heading diagonally) is not
 reproduced; ducks use a uniform scale.
+
+## Fake shadow
+
+`BeltView` draws a soft shadow strip under the belt when its **Shadow Material** slot holds a material (the pack's
+`Materials/BeltShadow.mat`, filled in by Reset; an empty slot means no shadow). The strip is swept along the path like
+the channel, so it follows the belt's height: a raised part of the belt carries its shadow with it.
+
+- `BeltMeshSettings`: **Shadow Spread Cells** (how far the strip reaches past the outer wall edge) and **Shadow Offset
+  Cells** (X/Y/Z offset in the local axes of the BeltView; under a tilted `PlaneRoot` -Z is down the screen and a small
+  negative Y keeps it behind the channel floor). Changing them rebuilds the belt.
+- Material `BeltPath/Belt Shadow`: **Color**, **Brightness**, **Saturation** (0 grey, 1 as the color, 2 vivid),
+  **Opacity**, **Edge Softness**. These change live without a rebuild.
+- The channel is opaque and writes depth, so the shadow only shows where it sticks out past the belt. A stencil test
+  keeps it from darkening twice where the belt crosses itself.
 
 ## Algorithm
 

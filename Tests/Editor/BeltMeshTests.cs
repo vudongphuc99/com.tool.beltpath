@@ -60,6 +60,36 @@ namespace Tool.BeltPath.Tests
             Object.DestroyImmediate(mesh);
         }
 
+        [Test]
+        public void Shadow_SpansTheOuterWallsPlusSpread()
+        {
+            var mesh = BeltSweepMeshBuilder.BuildShadow(Build(OpenLineJson), Shape, settings);
+
+            var expected = (settings.ChannelWidthCells * 0.5f + settings.WallThicknessCells
+                + settings.ShadowSpreadCells) * Shape.CellSize;
+            Assert.That(mesh.bounds.extents.z, Is.EqualTo(expected).Within(Tolerance));
+            Object.DestroyImmediate(mesh);
+        }
+
+        [Test]
+        public void Shadow_FollowsBeltElevation()
+        {
+            const string raisedJson = "{\"isClosed\":false,\"nodes\":[{\"x\":0,\"y\":0},"
+                + "{\"x\":9,\"y\":0,\"elevation\":2},{\"x\":18,\"y\":0}]}";
+            var path = Build(raisedJson);
+            var mesh = BeltSweepMeshBuilder.BuildShadow(path, Shape, settings);
+
+            var pathTop = 0f;
+            foreach (var point in path.Points)
+            {
+                pathTop = Mathf.Max(pathTop, point.y);
+            }
+
+            Assert.That(pathTop, Is.GreaterThan(1f));
+            Assert.That(mesh.bounds.max.y, Is.EqualTo(pathTop).Within(0.05f));
+            Object.DestroyImmediate(mesh);
+        }
+
         private static BeltPath Build(string json)
         {
             return BeltPath.Build(BeltPathData.FromJson(json), Shape);

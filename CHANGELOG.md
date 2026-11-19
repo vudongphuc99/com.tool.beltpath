@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.2.0]
+
+- Fake belt shadow: `BeltShadow` shader (color, brightness, saturation, opacity, edge softness), a shadow strip
+  mesh that follows the belt height, `BeltMeshSettings` shadow spread and X/Y/Z offset, and a `Shadow Material` slot on
+  `BeltView` (empty = no shadow).
+
+## [1.1.3]
+
+- Fix: the `v1.1.2` tag shipped with `package.json` still at 1.1.1, so the Package Updater kept offering the update
+  after installing it. Use 1.1.3 or later.
+- The 3D view takes 40% of the screen and the tool panel 60%, which gives the top view more room.
+- Compact map editor panel: smaller rows, gaps, fonts and elevation profile; image controls share the Save/Load row.
+- Fix text contrast: panel text is white on the dark background; buttons, inputs and dropdowns keep dark text.
+- Place is a toggle button at the start of the toolbar; while it is off, the Closed/Insert/Handles/Auto controls are hidden.
+- Test: `PackageVersionTests` checks that `package.json` and the newest `CHANGELOG.md` entry have the same version.
+
 ## [1.1.1]
 
 - `BeltPath/Package Updater` window: shows the installed and latest package version (newest `vX.Y.Z` git tag) and
