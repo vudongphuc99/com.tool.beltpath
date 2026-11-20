@@ -11,7 +11,10 @@ Material:
   m_Shader: {fileID: 4800000, guid: 0d77c74b6154e42f8b91bc5d4be881cb, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - _EDGE_FOAM_OFF
+  - _FLOW_ARROWS_OFF
+  - _FLOW_DISTORT_OFF
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -30,19 +33,26 @@ Material:
     - _ArrowStrength: 0
     - _ArrowTiling: 1
     - _ArrowWidth: 0.05
+    - _CenterBandOn: 1
     - _CenterBright: 0.311
     - _CenterBrightPosition: 0.632
     - _CenterBrightWidth: 1
     - _DistortStrength: 0
     - _EdgeDark: 1
+    - _EdgeDarkOn: 1
     - _EdgeDarkWidth: 0.01
+    - _EdgeFoamOn: 0
+    - _FlowArrowsOn: 0
     - _FlowContrast: 0.066
+    - _FlowDistortOn: 0
+    - _FlowPatternOn: 1
     - _FlowSpeed: 0.65
     - _FoamSoftness: 0.056
     - _FoamSpeed: 0.52
     - _FoamStrength: 0
     - _FoamTiling: 4.6
     - _FoamWidth: 0.01
+    - _InnerCurrentOn: 1
     - _InnerCurrentStrength: 0.208
     - _PathTiling: 2.3
     m_Colors:

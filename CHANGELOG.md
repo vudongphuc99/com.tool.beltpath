@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0]
+
+- Effect toggles in `Water Flow` (center band, edge darkening, flow pattern, flow distortion, edge foam, inner current,
+  flow arrows) and `Water Caustics` (softening noise, mask noise). A switched-off effect is removed from the shader
+  variant (`shader_feature_local`), so it costs no GPU time. All toggles are on by default, and a material saved
+  before this version keeps every effect. `BeltWater.mat` now has distortion, edge foam and arrows off, because their
+  strength was already 0.
+- Noise coordinates of the water shaders are built in the vertex shader and interpolated, instead of per pixel.
+- `BeltPeriodicWeb` takes the square root twice instead of nine times (same result).
+- `Belt Shadow` computes its color once per vertex instead of per pixel.
+- To turn all caustics off, leave `Water Caustics Material` empty on `BeltView`.
+
 ## [1.2.1]
 
 - Water shader optimization for mobile GPUs: `BeltHash` and `BeltHash2` no longer use `sin` (noise shape is kept, the

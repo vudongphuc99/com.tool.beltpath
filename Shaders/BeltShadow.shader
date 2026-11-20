@@ -48,6 +48,7 @@ Shader "BeltPath/Belt Shadow"
             {
                 float4 pos : SV_POSITION;
                 half across : TEXCOORD0;
+                half3 rgb : TEXCOORD1;
             };
 
             v2f vert(appdata v)
@@ -55,15 +56,16 @@ Shader "BeltPath/Belt Shadow"
                 v2f o;
                 o.pos = UnityObjectToClipPos(v.vertex);
                 o.across = v.uv.x;
+                // Depends on material values only, so it is computed once per vertex instead of once per pixel.
+                half grey = dot(_Color.rgb, half3(0.299, 0.587, 0.114));
+                o.rgb = saturate(lerp(grey.xxx, _Color.rgb, _Saturation) * _Brightness);
                 return o;
             }
 
             fixed4 frag(v2f i) : SV_Target
             {
-                half grey = dot(_Color.rgb, half3(0.299, 0.587, 0.114));
-                half3 rgb = lerp(grey.xxx, _Color.rgb, _Saturation) * _Brightness;
                 half edge = smoothstep(0, _EdgeSoftness, min(i.across, 1 - i.across));
-                return fixed4(saturate(rgb), _Opacity * edge * _Color.a);
+                return fixed4(i.rgb, _Opacity * edge * _Color.a);
             }
             ENDCG
         }

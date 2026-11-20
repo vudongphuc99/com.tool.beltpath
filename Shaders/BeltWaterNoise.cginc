@@ -46,8 +46,9 @@ float BeltPeriodicWeb(float2 p, float periodY)
 {
     float2 cell = floor(p);
     float2 local = frac(p);
-    float nearest = 8.0;
-    float second = 8.0;
+    // Squared distances keep the same order as distances, so the square root is taken only twice at the end.
+    float nearest = 64.0;
+    float second = 64.0;
 
     for (int y = -1; y <= 1; y++)
     {
@@ -55,13 +56,14 @@ float BeltPeriodicWeb(float2 p, float periodY)
         {
             float2 offset = float2(x, y);
             float2 id = float2(cell.x + x, BeltWrapRow(cell.y + y, periodY));
-            float dist = length(offset + BeltHash2(id) - local);
-            second = min(second, max(dist, nearest));
-            nearest = min(nearest, dist);
+            float2 delta = offset + BeltHash2(id) - local;
+            float distSq = dot(delta, delta);
+            second = min(second, max(distSq, nearest));
+            nearest = min(nearest, distSq);
         }
     }
 
-    return second - nearest;
+    return sqrt(second) - sqrt(nearest);
 }
 
 #endif

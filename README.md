@@ -286,6 +286,16 @@ the channel, so it follows the belt's height: a raised part of the belt carries 
    (closed belts round the repeat count so tiling has no seam); `UV2.x` is the height inside the profile
    (0 floor, 1 crest), used by the channel shader.
 
+## Shader effect toggles
+
+Every effect of `BeltPath/Water Flow` (center band, edge darkening, flow pattern, flow distortion, edge foam, inner
+current, flow arrows) and `BeltPath/Water Caustics` (softening noise, mask noise) has an **Enabled** checkbox in the
+material inspector. A switched-off effect is not compiled into the shader variant, so it costs no GPU time (the effects
+run on the GPU; nothing is updated on the CPU). To turn all caustics off, leave `Water Caustics Material` empty on
+`BeltView`. The toggles are `shader_feature_local` keywords (`_FLOW_ARROWS_OFF`, ...): a build keeps only the
+combinations that a material uses, so switching a keyword by script at runtime needs a material that uses that
+combination to be included in the build.
+
 ## Contents
 
 | Folder | Purpose |
