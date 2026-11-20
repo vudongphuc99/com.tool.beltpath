@@ -79,9 +79,9 @@ Shader "BeltPath/Water Caustics"
 
             fixed4 frag(Varyings input) : SV_Target
             {
-                float web = Web(input.uv);
-                float soft = lerp(1.0, ScrollingNoise(input.uv, SoftenCells, SoftenRows, _DissolveScroll.xy), _Softness);
-                float mask = smoothstep(MaskLow, MaskHigh, ScrollingNoise(input.uv, MaskCells, MaskRows, _MaskScroll.xy));
+                half web = Web(input.uv);
+                half soft = lerp(1.0, ScrollingNoise(input.uv, SoftenCells, SoftenRows, _DissolveScroll.xy), _Softness);
+                half mask = smoothstep(MaskLow, MaskHigh, ScrollingNoise(input.uv, MaskCells, MaskRows, _MaskScroll.xy));
                 return fixed4(_Color.rgb * (_Color.a * web * soft * mask), 1);
             }
             ENDCG

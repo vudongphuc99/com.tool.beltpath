@@ -108,47 +108,47 @@ Shader "BeltPath/Water Flow"
             // Horizontal gradient: dark sides, base middle, bright center band.
             fixed3 ChannelGradient(float across)
             {
-                float edgeDistance = min(across, 1.0 - across);
+                half edgeDistance = min(across, 1.0 - across);
                 fixed3 color = lerp(_WaterOuterColor.rgb, _WaterInnerColor.rgb, smoothstep(0.0, 0.5, edgeDistance));
-                float band = 1.0 - smoothstep(0.0, _CenterBrightWidth * 0.5, abs(across - _CenterBrightPosition));
+                half band = 1.0 - smoothstep(0.0, _CenterBrightWidth * 0.5, abs(across - _CenterBrightPosition));
                 color = lerp(color, _WaterCenterColor.rgb, band * _CenterBright);
-                float edgeMask = 1.0 - smoothstep(0.0, _EdgeDarkWidth, edgeDistance);
+                half edgeMask = 1.0 - smoothstep(0.0, _EdgeDarkWidth, edgeDistance);
                 return color * (1.0 - edgeMask * _EdgeDark);
             }
 
             // Moving light and dark patches, warped by a second slower noise.
-            float FlowShade(float2 uv)
+            half FlowShade(float2 uv)
             {
                 float warp = (FlowNoise(uv, DistortAcrossCells, DistortAlongCells, _FlowSpeed * 0.5, 7.0) - 0.5) * 2.0;
                 float2 warped = float2(uv.x + warp * _DistortStrength, uv.y + warp * _DistortStrength);
-                float pattern = FlowNoise(warped, AcrossCells, _PathTiling, _FlowSpeed, 0.0);
+                half pattern = FlowNoise(warped, AcrossCells, _PathTiling, _FlowSpeed, 0.0);
                 return 1.0 + (pattern - 0.5) * 2.0 * _FlowContrast;
             }
 
-            // Bright rim along both banks, broken up by moving noise.
-            float EdgeFoam(float2 uv)
+            // Bright rim along both banks, broken up by the shared foam noise (`jitter`, 0..1).
+            half EdgeFoam(float2 uv, half jitter)
             {
-                float edgeDistance = min(uv.x, 1.0 - uv.x);
-                float jitter = FlowNoise(uv, FoamAcrossCells, _FoamTiling, _FoamSpeed, 13.0);
-                float shifted = edgeDistance + (jitter - 0.5) * FoamEdgeJitter;
+                half edgeDistance = min(uv.x, 1.0 - uv.x);
+                half shifted = edgeDistance + (jitter - 0.5) * FoamEdgeJitter;
                 return (1.0 - smoothstep(_FoamWidth, _FoamWidth + _FoamSoftness, shifted)) * (0.5 + jitter);
             }
 
             // Chevron pointing toward +v (the flow direction), repeated along the belt.
-            float FlowArrow(float2 uv)
+            half FlowArrow(float2 uv)
             {
                 float2 local = float2((uv.x - 0.5) * 2.0, frac(uv.y * round(_ArrowTiling) - _Time.y * _ArrowSpeed) - 0.5);
-                float offset = abs(local.y + abs(local.x) * ArrowTipSlope);
-                float thickness = _ArrowWidth * 0.4;
+                half offset = abs(local.y + abs(local.x) * ArrowTipSlope);
+                half thickness = _ArrowWidth * 0.4;
                 return 1.0 - smoothstep(thickness, thickness + _ArrowSoftness, offset);
             }
 
             fixed4 frag(Varyings input) : SV_Target
             {
                 fixed3 color = ChannelGradient(input.uv.x) * FlowShade(input.uv);
-                float current = FlowNoise(input.uv, FoamAcrossCells, _FoamTiling, _FoamSpeed, 29.0);
-                color *= 1.0 - current * _InnerCurrentStrength;
-                color = lerp(color, fixed3(1, 1, 1), saturate(EdgeFoam(input.uv)) * _FoamStrength);
+                // One noise shared by the inner current and the edge foam jitter.
+                half foamNoise = FlowNoise(input.uv, FoamAcrossCells, _FoamTiling, _FoamSpeed, 13.0);
+                color *= 1.0 - foamNoise * _InnerCurrentStrength;
+                color = lerp(color, fixed3(1, 1, 1), saturate(EdgeFoam(input.uv, foamNoise)) * _FoamStrength);
                 color = lerp(color, fixed3(1, 1, 1), FlowArrow(input.uv) * _ArrowStrength);
                 return fixed4(color * _Color.rgb, _Color.a);
             }

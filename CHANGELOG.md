@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1]
+
+- Water shader optimization for mobile GPUs: `BeltHash` and `BeltHash2` no longer use `sin` (noise shape is kept, the
+  random pattern is different), `Water Flow` shares one noise between the inner current and the edge foam (3 noise
+  calls per pixel instead of 4), and color math in `Water Flow` and `Water Caustics` uses `half`.
+- Shaders in a game that include `BeltWaterNoise.cginc` get the new hash automatically.
+
 ## [1.2.0]
 
 - Fake belt shadow: `BeltShadow` shader (color, brightness, saturation, opacity, edge softness), a shadow strip

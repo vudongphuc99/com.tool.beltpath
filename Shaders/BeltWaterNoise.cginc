@@ -4,14 +4,19 @@
 #ifndef BELT_WATER_NOISE_INCLUDED
 #define BELT_WATER_NOISE_INCLUDED
 
+// Hash without sin (frac, dot and multiplies only): cheaper on mobile GPUs and stable for large cell values.
 float BeltHash(float2 cell)
 {
-    return frac(sin(dot(cell, float2(127.1, 311.7))) * 43758.5453);
+    float3 p3 = frac(cell.xyx * 0.1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return frac((p3.x + p3.y) * p3.z);
 }
 
 float2 BeltHash2(float2 cell)
 {
-    return float2(BeltHash(cell), BeltHash(cell + 17.3));
+    float3 p3 = frac(cell.xyx * float3(0.1031, 0.1030, 0.0973));
+    p3 += dot(p3, p3.yzx + 33.33);
+    return frac((p3.xx + p3.yz) * p3.zy);
 }
 
 // Wraps a lattice row into 0..periodY-1, also for negative rows.
