@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.3.0]
+## [1.3.1]
 
 - Effect toggles in `Water Flow` (center band, edge darkening, flow pattern, flow distortion, edge foam, inner current,
   flow arrows) and `Water Caustics` (softening noise, mask noise). A switched-off effect is removed from the shader
