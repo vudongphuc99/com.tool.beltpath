@@ -14,8 +14,9 @@ namespace Tool.BeltPath.MapEditor
         private const float NameFieldWidthPixels = 160f;
         private const int FontSize = 11;
         private const int HelpFontSize = 9;
-        private static readonly Color ToolOnColor = new Color(0.16f, 0.42f, 0.75f);
-        private static readonly Color DarkTextColor = new Color(0.08f, 0.08f, 0.1f);
+        private const string RootClass = "map-editor";
+        private const string ToolOnClass = "map-editor__tool--on";
+        private const string HelpClass = "map-editor__help";
         private const float CoordinateFieldWidthPixels = 150f;
         private const float CoordinateLabelWidthPixels = 62f;
         private const float HandleFieldWidthPixels = 96f;
@@ -62,8 +63,7 @@ namespace Tool.BeltPath.MapEditor
             TopView = topView;
             Profile = profile;
             style.flexDirection = FlexDirection.Column;
-            style.backgroundColor = new Color(0.14f, 0.15f, 0.17f);
-            style.color = Color.white;
+            AddToClassList(RootClass);
             style.fontSize = FontSize;
             Add(CreateToolbar());
             Add(CreateFileRow());
@@ -77,7 +77,6 @@ namespace Tool.BeltPath.MapEditor
             Add(statusLabel);
             Add(CreateHelp());
             StyleLabel(statusLabel);
-            StyleControls(this);
         }
 
         public event Action NewClicked;
@@ -104,6 +103,7 @@ namespace Tool.BeltPath.MapEditor
         public event Action<bool> ImageVisibleChanged;
         public event Action<string> SaveClicked;
         public event Action<string> LoadClicked;
+        public event Action OpenFolderClicked;
 
         public TopViewElement TopView { get; }
 
@@ -136,7 +136,6 @@ namespace Tool.BeltPath.MapEditor
         /// <summary>Puts a row of extension UI right above the top view.</summary>
         public void AddSection(VisualElement section)
         {
-            StyleControls(section);
             Insert(IndexOf(TopView), section);
         }
 
@@ -214,17 +213,7 @@ namespace Tool.BeltPath.MapEditor
                 insertToggle.SetValueWithoutNotify(false);
             }
 
-            if (enabled)
-            {
-                placeButton.style.backgroundColor = ToolOnColor;
-                placeButton.style.color = Color.white;
-            }
-            else
-            {
-                placeButton.style.backgroundColor = StyleKeyword.Null;
-                placeButton.style.color = DarkTextColor;
-            }
-
+            placeButton.EnableInClassList(ToolOnClass, enabled);
             var display = enabled ? DisplayStyle.Flex : DisplayStyle.None;
             foreach (var control in placeToolControls)
             {
@@ -280,6 +269,7 @@ namespace Tool.BeltPath.MapEditor
             loadDropdown.style.width = NameFieldWidthPixels;
             row.Add(loadDropdown);
             row.Add(CreateButton("Load", () => LoadClicked?.Invoke(loadDropdown.value)));
+            row.Add(CreateButton("Open Folder", () => OpenFolderClicked?.Invoke()));
             AddImageControls(row);
             return row;
         }
@@ -414,15 +404,6 @@ namespace Tool.BeltPath.MapEditor
             return element == field || field.Contains(element);
         }
 
-        // The panel is dark with white text, but buttons and input boxes keep the light look of the theme: their text
-        // is dark so it contrasts with their own background. Toggle labels sit next to their box, not far away.
-        private static void StyleControls(VisualElement root)
-        {
-            root.Query<Button>().ForEach(button => button.style.color = DarkTextColor);
-            root.Query(className: BaseField<string>.inputUssClassName).ForEach(input => input.style.color = DarkTextColor);
-            root.Query<Toggle>().ForEach(toggle => toggle.labelElement.style.minWidth = 0f);
-        }
-
         private static VisualElement CreateRow()
         {
             var row = new VisualElement();
@@ -447,14 +428,13 @@ namespace Tool.BeltPath.MapEditor
             StyleLabel(help);
             help.style.fontSize = HelpFontSize;
             help.style.whiteSpace = WhiteSpace.Normal;
-            help.style.opacity = 0.6f;
+            help.AddToClassList(HelpClass);
             return help;
         }
 
         private static void StyleLabel(Label label)
         {
             label.style.fontSize = FontSize;
-            label.style.color = Color.white;
             label.style.marginLeft = ToolbarGapPixels;
         }
     }

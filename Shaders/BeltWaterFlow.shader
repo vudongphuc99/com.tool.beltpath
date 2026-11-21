@@ -1,4 +1,4 @@
-// Flowing water surface for the belt channel (Built-in RP, unlit).
+// Flowing water surface for the belt channel (Built-in RP, unlit, opaque).
 // Mesh contract: uv.x runs 0..1 across the channel, uv.y is the distance along the belt in UV units.
 // Closed belts end on a whole number of UV units, so the noise (period of one UV unit) has no seam.
 // Every effect has an "Enabled" toggle. A toggle that is switched off removes its code from the shader variant,
@@ -7,8 +7,8 @@ Shader "BeltPath/Water Flow"
 {
     Properties
     {
-        [Header(Opacity)]
-        _Color ("Tint (alpha = opacity)", Color) = (1, 1, 1, 0.7)
+        [Header(Tint)]
+        _Color ("Tint", Color) = (1, 1, 1, 1)
 
         [Space(8)]
         [Header(Base Colors)]
@@ -70,13 +70,12 @@ Shader "BeltPath/Water Flow"
 
     SubShader
     {
-        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "IgnoreProjector" = "True" }
+        Tags { "Queue" = "Geometry" "RenderType" = "Opaque" }
 
         Pass
         {
-            ZWrite Off
+            ZWrite On
             Cull Off
-            Blend SrcAlpha OneMinusSrcAlpha
 
             CGPROGRAM
             #pragma vertex vert
@@ -259,7 +258,7 @@ Shader "BeltPath/Water Flow"
             #if defined(BELT_FLOW_ARROWS)
                 color = lerp(color, fixed3(1, 1, 1), FlowArrow(input.across, input.arrowPhase) * _ArrowStrength);
             #endif
-                return fixed4(color * _Color.rgb, _Color.a);
+                return fixed4(color * _Color.rgb, 1);
             }
             ENDCG
         }

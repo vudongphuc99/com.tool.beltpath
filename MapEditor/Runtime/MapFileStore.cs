@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using UnityEngine;
 
 namespace Tool.BeltPath.MapEditor
 {
@@ -22,6 +23,28 @@ namespace Tool.BeltPath.MapEditor
         {
             this.folder = folder;
             this.format = format;
+        }
+
+        public string Folder => folder;
+
+        /// <summary>Creates the folder when it is missing; false when the disk refuses.</summary>
+        public bool EnsureFolder()
+        {
+            try
+            {
+                Directory.CreateDirectory(folder);
+                return true;
+            }
+            catch (IOException e)
+            {
+                Debug.LogException(e);
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                Debug.LogException(e);
+            }
+
+            return false;
         }
 
         /// <summary>Map names (file names without extension), sorted.</summary>

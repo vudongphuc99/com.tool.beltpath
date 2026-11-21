@@ -1,0 +1,57 @@
+/* Map editor colors: black panel with white labels; controls are white with black text; disabled = grey; selected tool = blue. */
+
+.map-editor {
+    background-color: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+}
+
+.map-editor Label {
+    color: rgb(255, 255, 255);
+}
+
+.map-editor .unity-button,
+.map-editor .unity-base-field__input {
+    background-color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
+    border-color: rgb(160, 160, 160);
+}
+
+.map-editor .unity-button:hover {
+    background-color: rgb(235, 235, 235);
+}
+
+.map-editor .unity-toggle__label {
+    min-width: 0;
+}
+
+.map-editor .unity-toggle:checked > .unity-toggle__input {
+    background-color: rgb(41, 107, 191);
+    border-color: rgb(41, 107, 191);
+}
+
+.map-editor .unity-toggle:checked .unity-toggle__checkmark {
+    -unity-background-image-tint-color: rgb(255, 255, 255);
+}
+
+.map-editor .map-editor__tool--on,
+.map-editor .map-editor__tool--on:hover {
+    background-color: rgb(41, 107, 191);
+    border-color: rgb(41, 107, 191);
+    color: rgb(255, 255, 255);
+}
+
+.map-editor .unity-button:disabled,
+.map-editor .unity-base-field__input:disabled,
+.map-editor .unity-toggle:disabled > .unity-toggle__input {
+    background-color: rgb(200, 200, 200);
+    border-color: rgb(170, 170, 170);
+    color: rgb(110, 110, 110);
+}
+
+.map-editor *:disabled {
+    opacity: 1;
+}
+
+.map-editor .map-editor__help {
+    color: rgb(170, 170, 170);
+}

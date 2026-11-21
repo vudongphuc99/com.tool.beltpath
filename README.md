@@ -79,7 +79,9 @@ the channel really follows, with rounded corners.
 
 ## Map Editor (standalone tool for level designers)
 
-Menu `BeltPath/Create Map Editor Scene` creates `Assets/MapEditor/MapEditor.unity` in the game project (the package folder is read-only when installed from git); `BeltPath/Build Map Editor (Windows)`
+The editor is one prefab in the package, `MapEditor/Prefabs/MapEditor.prefab` (camera, `PlaneRoot/BeltView`, UI Document, `MapEditorController`, and a PanelSettings that uses the package theme). A game never rebuilds these objects:
+drag the prefab into a scene, or run the menu `BeltPath/Create Map Editor Scene`, which creates `Assets/MapEditor/MapEditor.unity` in the game project (the package folder is read-only when installed from git) holding one prefab instance and
+replaces an older scene made by version 1.3 or earlier. A package update changes the prefab, so every game gets the change. `BeltPath/Build Map Editor (Windows)`
 builds `Builds/MapEditor/BeltMapEditor.exe`. The screen is split in two:
 
 - **A (left, 40%)**: display only, the belt (channel + water) under a tilted `PlaneRoot` (see Camera framing), rebuilt after every edit.
@@ -158,15 +160,22 @@ public sealed class PinExtension : MapEditorExtension, IMapTopViewTool
 }
 ```
 
+### Colors
+
+The UI colors live in one stylesheet, `MapEditor/UI/MapEditor.uss` (imported by `MapEditorTheme.tss`, the theme of the
+prefab's PanelSettings): black panel with white labels, white buttons and fields with black text, grey for disabled controls, blue for the selected tool and
+checked toggles. The top view and the profile stay dark. Extension UI added with `Panel.AddSection` gets the same look
+without extra code.
+
 ### Using it in a game
 
-1. Install version 1.1.0 or newer (see Install). Run the menu `BeltPath/Create Map Editor Scene` to create the editor
-   scene in the game (`Assets/MapEditor/`).
+1. Install version 1.1.0 or newer (see Install). Drag `MapEditor/Prefabs/MapEditor.prefab` into a scene, or run the menu
+   `BeltPath/Create Map Editor Scene` to create the editor scene in the game (`Assets/MapEditor/`).
 2. Write the extension in the game's own code. If that code is in an assembly definition, add the references
    `Tool.BeltPath`, `Tool.BeltPath.MapEditor` and `Unity.InputSystem` to it; code without an assembly definition needs
    nothing.
 3. In the Map Editor scene, add the extension component to any GameObject (for example a new `Extensions` object) and
-   drag it into the `extensions` list of `MapEditorController`. Add one component per extension; the order of the list
+   drag it into the `extensions` list of `MapEditorController` (a prefab override of that one field). Add one component per extension; the order of the list
    is the order of `Attach`, `Refresh`, key handling and layer drawing.
 4. Press Play. The game's UI row shows above the top view, and Save, Load, New, Undo and Redo include the extension
    data.
@@ -288,6 +297,8 @@ the channel, so it follows the belt's height: a raised part of the belt carries 
 
 ## Shader effect toggles
 
+`BeltPath/Water Flow` is opaque (no alpha blending); `BeltPath/Water Caustics` is drawn additively on top of it.
+
 Every effect of `BeltPath/Water Flow` (center band, edge darkening, flow pattern, flow distortion, edge foam, inner
 current, flow arrows) and `BeltPath/Water Caustics` (softening noise, mask noise) has an **Enabled** checkbox in the
 material inspector. A switched-off effect is not compiled into the shader variant, so it costs no GPU time (the effects
@@ -306,7 +317,9 @@ combination to be included in the build.
 | `Materials/` | Channel, water and caustics materials using the pack shaders |
 | `Settings/` | `BeltMeshSettings.asset`, the default channel and water dimensions |
 | `MapEditor/Runtime/` | Standalone map editor: `MapDocument`, `MapEditorController`, top view and profile elements, `MapFileStore`, and the extension API (`MapEditorExtension`, `MapEditorContext`, `IMapDataExtension`, `IMapFileFormat`, `IMapTopViewLayer`, `IMapTopViewTool`) (assembly `Tool.BeltPath.MapEditor`) |
-| `MapEditor/Editor/` | Scene creator and the Windows build menu (assembly `Tool.BeltPath.MapEditor.Editor`) |
+| `MapEditor/Editor/` | Prefab builder (`BeltPath/Dev/Rebuild Map Editor Prefab`, embedded package only), scene creator and the Windows build menu (assembly `Tool.BeltPath.MapEditor.Editor`) |
+| `MapEditor/UI/` | `MapEditorTheme.tss` and `MapEditor.uss`, the colors of the map editor UI |
+| `MapEditor/Prefabs/` | `MapEditor.prefab` and its `MapEditorPanelSettings.asset` |
 | `Tests/Editor/` | EditMode tests (assembly `Tool.BeltPath.Tests`); `Data/figure_eight.json` is the test sample (closed figure-eight belt, 7 custom-handle nodes) |
 
 ## Notes

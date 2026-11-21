@@ -28,11 +28,11 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _ArrowSoftness: 0.001
-    - _ArrowSpeed: 0
-    - _ArrowStrength: 0
-    - _ArrowTiling: 1
-    - _ArrowWidth: 0.05
+    - _ArrowSoftness: 0.3
+    - _ArrowSpeed: 2.79
+    - _ArrowStrength: 0.165
+    - _ArrowTiling: 12.49
+    - _ArrowWidth: 0.5
     - _CenterBandOn: 1
     - _CenterBright: 0.311
     - _CenterBrightPosition: 0.632

@@ -187,6 +187,7 @@ namespace Tool.BeltPath.MapEditor
             panel.ClosedChanged += document.SetClosed;
             panel.SaveClicked += Save;
             panel.LoadClicked += Load;
+            panel.OpenFolderClicked += HandleOpenFolderClicked;
             panel.PlaceToggled += HandlePlaceToggled;
             panel.HandlesToggled += HandleHandlesToggled;
             panel.PointEdited += HandlePointEdited;
@@ -216,6 +217,14 @@ namespace Tool.BeltPath.MapEditor
         }
 
         // The extension data changes before the document: the document change refreshes the editor, which must see it.
+        private void HandleOpenFolderClicked()
+        {
+            if (store.EnsureFolder())
+            {
+                Application.OpenURL(new System.Uri(store.Folder).AbsoluteUri);
+            }
+        }
+
         private void HandleNewClicked()
         {
             state.ClearSelection();

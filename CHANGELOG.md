@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.4.0]
+
+- The map editor is now one prefab in the package (`MapEditor/Prefabs/MapEditor.prefab`). `BeltPath/Create Map Editor
+  Scene` makes a scene with a single instance of it, so package updates reach every game. Games that have a scene made
+  by an older version run the menu again (it replaces the scene; extension components must be added again).
+  `BeltPath/Dev/Rebuild Map Editor Prefab` rebuilds the prefab and works only on the embedded package.
+- The map editor UI uses one stylesheet: black panel, white buttons and fields with black text, grey when disabled,
+  blue for the selected tool.
+- New `Open Folder` button opens the folder of the map files (`Output/Maps`), creating it when it does not exist.
+
+- `Water Flow` is now opaque: `Geometry` queue, `ZWrite On`, no alpha blending (cheaper on mobile GPUs, early-Z
+  works). The alpha of its `Tint` color no longer has any effect, and the channel floor no longer shows through the
+  water, so the Outer/Inner/Center colors may need a small adjustment.
+
 ## [1.3.1]
 
 - Effect toggles in `Water Flow` (center band, edge darkening, flow pattern, flow distortion, edge foam, inner current,
